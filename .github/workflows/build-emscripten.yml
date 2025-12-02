@@ -1,0 +1,55 @@
+name: cpp-emscripten-prebuilt-release-actions-workflow
+on:
+  push:
+    paths-ignore: "**/README.md"
+    tags:
+      - 'v*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      targetZip: MonotoneCubicInterpolation.js-${{ github.ref_name }}-emscripten.zip
+    steps:
+      - uses: actions/checkout@v5
+      
+      - uses: actions/checkout@v5
+        with:
+          ref: 'main'
+          path: 'committing'
+      
+      - name: Build
+        run: |
+          docker run \
+          --rm \
+          -v $(pwd):/src \
+          -u $(id -u):$(id -g) \
+          emscripten/emsdk \
+          emcc -fsanitize=address -sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=5MB -lembind -o MonotoneCubicInterpolation.js cubic_hermite_spline.cpp
+          
+      - run: cp -f 'MonotoneCubicInterpolation.js' 'committing'
+          
+      - run: cp -f 'MonotoneCubicInterpolation.wasm' 'committing'
+          
+      - run: cp -f 'index.html' 'committing'
+
+      - uses: EndBug/add-and-commit@v9 # You can change this to use a specific version.
+        with:
+          cwd: 'committing'
+          
+      # - name: Archive Release
+      #   uses: thedoctor0/zip-release@master
+      #   with:
+      #     type: 'zip'
+      #     path: |
+      #       MonotoneCubicInterpolation.js
+      #       MonotoneCubicInterpolation.wasm
+      #       index.html
+      #     filename: "${{ env.targetZip }}"
+
+      # - name: Release prebuilt
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     artifacts: "${{ env.targetZip }}"
+      #     allowUpdates: true
+      #     token: ${{ secrets.GITHUB_TOKEN }}

@@ -6,7 +6,6 @@
 #include <cstring>
 #include <iostream>
 
-
 template <typename T>
 class CubicHermiteSpline {
 public:
@@ -70,6 +69,9 @@ private:
 template <typename T>
 class MonotoneCubicInterpolation {
 public:
+    MonotoneCubicInterpolation(const std::vector<T> &x, const std::vector<T> &y, const size_t size) : MonotoneCubicInterpolation(x.data(), y.data(), size) {
+    }
+
     MonotoneCubicInterpolation(const T * x_ptr, const T * y_ptr, const size_t size) {
         std::vector<T> delta(size, 0);
         std::vector<T> m(size, 0);
@@ -93,6 +95,23 @@ private:
     std::unique_ptr<CubicHermiteSpline<T>> spliner_ptr_;
 };
 
+#ifdef __EMSCRIPTEN__
+
+#include <emscripten.h>
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
+using namespace emscripten;
+
+
+// Binding code
+EMSCRIPTEN_BINDINGS(my_class_example) {
+    register_vector<double>("DoubleList");
+    class_<MonotoneCubicInterpolation<double>>("MonotoneCubicInterpolation")
+        .constructor<const std::vector<double>, const std::vector<double>, size_t>()
+        .function("getValue", &MonotoneCubicInterpolation<double>::operator());
+}
+
+#else
 
 int main(int argc, char* argv[])
 {
@@ -109,3 +128,4 @@ int main(int argc, char* argv[])
     }
     return 0;
 }
+#endif

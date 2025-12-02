@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css">
+</head>
+<body>
+  <script>
+    var Module = {
+      onRuntimeInitialized: function() {
+        {
+          const x = Array
+            .from({length: (1/0.1) + 1})
+            .map((_, i) => i * 0.1)
+            .reduce((p, c) => {
+              p.push_back(c);
+              return p;
+            }, new Module.DoubleList());
+          
+          const y = new Module.DoubleList();
+          y.resize(x.size(), 0);
+          
+          for(var i = 0 ; i < x.size(); i++)
+          {
+            y.set(i, Math.sin(x.get(i)));
+          }
+          
+          const monotoneCubicInterpolation = new Module.MonotoneCubicInterpolation(x, y, x.size());
+          const nPoints = 100;
+          for(var i = 0; i < nPoints; ++i) {
+            const x = i / nPoints;
+            console.log(`${x} ${monotoneCubicInterpolation.getValue(x)}`);
+          }
+          
+          x.delete();  // Required to avoid C++ memory leaks and undestructed object
+          y.delete();  // Required to avoid C++ memory leaks and undestructed object
+        }
+
+        {
+            var board = JXG.JSXGraph.initBoard('box', {boundingbox: [-10, 10, 10, -10], axis: true});
+            
+            // var a = board.create('slider', [[2, -5], [7, -5], [-5, 1, 5]], { name: 'a' });
+            // var b = board.create('slider', [[2, -6], [7, -6], [-5, 0, 5]], { name: 'b' });
+            // var c = board.create('slider', [[2, -7], [7, -7], [-5, 0, 5]], { name: 'c' });
+
+            /*
+                x0 = np.linspace(0, np.pi*5, 30)
+                y0 = np.sin(x0)*x0
+                
+                interpolator = mCubicInterp(x0, y0)
+                x1 = np.linspace(0, np.pi*5, 300)
+                y1 = np.array([interpolator(x) for x in x1])
+            */
+            
+            /* var f = board.create('functiongraph', [
+                function(x) {
+                    return 1;// a.Value() * x * x + b.Value() * x + c.Value();
+                }
+            ]);*/
+            const m = 300;
+            const x1 = Array
+                .from({length: m})
+                .map((_, i) => i * (Math.PI * 5) / (m - 1))
+                .reduce((p, c) => {
+                  p.push_back(c);
+                  return p;
+                }, new Module.DoubleList());
+          
+            const y1 = new Module.DoubleList();
+            y1.resize(x1.size(), 0);
+            for(var i = 0 ; i < x1.size(); i++)
+            {
+                y1.set(i, Math.sin(x1.get(i)) * x1.get(i));
+            }
+            
+            const monotoneCubicInterpolation = new Module.MonotoneCubicInterpolation(x1, y1, x1.size());
+            /*
+          for(var i = 0; i < nPoints; ++i) {
+            
+            console.log(`${x} ${monotoneCubicInterpolation.getValue(x)}`);
+          }
+            */
+            for(var i = 0; i < m; i++) {
+                // const x = i / m;
+                board.create('point', [x1.get(i), y1.get(i)], { withLabel: false, color: 'red', fixed: true });
+            }
+
+            x1.delete();  // Required to avoid C++ memory leaks and undestructed object
+            y1.delete();  // Required to avoid C++ memory leaks and undestructed object
+
+
+            const n = 30;
+            const x0 = Array.from({ length: n }, (_, i) => i * (Math.PI * 5) / (n - 1));
+            const y0 = x0.map(x => Math.sin(x) * x);
+
+            for (i = 0; i < n; i++) {
+                board.create('point', [x0[i], y0[i]], { withLabel: false, color: 'green', fixed: true });
+            }
+        }
+      }
+    };
+
+    {
+        const result = window.location.href.match(/.*:\/\/([^\.]+)\.github\.io\/([^\/]+)\//);
+        if (result) {
+            const repoLink = document.createElement("a");
+            repoLink.href = `https://github.com/${result[1]}/${result[2]}`;
+            repoLink.textContent = `${result[1]}/${result[2]}`;
+            document.body.insertBefore(repoLink, document.body.firstElementChild);
+        }
+    }
+  </script>
+  <div id="box" class="jxgbox" style="width:500px; aspect-ratio: 1/1;"></div>
+  <script src="./MonotoneCubicInterpolation.js"></script>
+</html>
+
