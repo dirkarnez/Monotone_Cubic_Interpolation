@@ -2,8 +2,8 @@ name: cpp-emscripten-prebuilt-release-actions-workflow
 on:
   push:
     paths-ignore: "**/README.md"
-    tags:
-      - 'v*'
+    # tags:
+    #   - 'v*'
 
 jobs:
   test:
